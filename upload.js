@@ -2,7 +2,7 @@ $(function () {
     var dropbox = $("#dropbox");
     var fileInput = $("#file-field");
     fileInput.on("change", function() {
-          processFile(this.files[0]);
+          sendFile(this.files[0]);
         });
 
     dropbox.on("dragover", function(event) {
@@ -20,79 +20,24 @@ $(function () {
     dropbox.on("drop", function (event) {
         event.preventDefault();  
         event.stopPropagation();
-        processFile(event.originalEvent.dataTransfer.files[0]);
+        sendFile(event.originalEvent.dataTransfer.files[0]);
     });
 });
 
 function sendFile(file) {
-    var reader = new FileReader();
- 
-    reader.onload = function() {    
-        var xhr = new XMLHttpRequest();    
-        
-        xhr.upload.addEventListener("progress", function(e) {
-          if (e.lengthComputable) {
-            var progress = (e.loaded * 100) / e.total;
-            /* ... обновляем инфу о процессе загрузки ... */
-          }
-        }, false);
-        
-        /* ... можно обрабатывать еще события load и error объекта xhr.upload ... */
-     
-        xhr.onload = function () {
-            if(this.status == 200) {
-              /* ... все ок! смотрим в this.responseText ... */
-            } else {
-              /* ... ошибка! ... */
-            }
-        };
-        xhr.open("POST", "http://avms.dit.in.ua");
-
-        // Составляем заголовки и тело запроса к серверу,  в котором и отправим файл.
-
-        var boundary = "xxxxxxxxx";
-        // Устанавливаем заголовки.
-        xhr.setRequestHeader('Content-type', 'multipart/form-data; boundary="' + boundary + '"');
-        xhr.setRequestHeader('Cache-Control', 'no-cache');
-
-        // Формируем тело запроса.
-        var body = "--" + boundary + "\r\n";
-        body += "Content-Disposition: form-data; name='superfile'; filename='" + unescape( encodeURIComponent(file.name)) + "'\r\n"; // unescape позволит отправлять файлы с русскоязычными именами без проблем.
-        body += "Content-Type: application/octet-stream\r\n\r\n";
-        body += reader.result + "\r\n";
-        body += "--" + boundary + "--";
-
-        // Пилюля от слабоумия для Chrome, который гад портит файлы в процессе загрузки.        
-        if (!XMLHttpRequest.prototype.sendAsBinary) {
-            XMLHttpRequest.prototype.sendAsBinary = function(datastr) {
-                function byteValue(x) {
-                    return x.charCodeAt(0) & 0xff;
-                }
-                var ords = Array.prototype.map.call(datastr, byteValue);
-                var ui8a = new Uint8Array(ords);
-                this.send(ui8a.buffer);
-            }
-        }
-
-        // Отправляем файлы.
-        if(xhr.sendAsBinary) {
-            // Только для Firefox
-            xhr.sendAsBinary(body);
-        } else {
-            // Для остальных (как нужно по спецификации W3C)
-            xhr.send(body);
-        }
-  };
-  // Читаем файл
-  reader.readAsBinaryString(file); 
-
-    return 1;
+    var formData = new FormData();
+    formData.append('upload', file);
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", '/apr/uploads');
+    xhr.onload = function (response) {
+        //if (response.status == 200) {
+            console.log(response);
+        //}
+    }
+    xhr.send(formData);
 }
 
-function processFile (file) {
-
-    var fileId = sendFile(file);
-
+function processFile (fileId) {
     var avs, results;
 
     function getAntiviruses() {
