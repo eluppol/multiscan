@@ -1,18 +1,36 @@
+<!DOCTYPE html>
 <html>
 <head>
     <script language="javascript" type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
     <script language="javascript" type="text/javascript" src="upload.js"></script>
+    <script language="javascript" type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
-<div>
- <input type="file" id="file-field"/>
+    <div class="container">
+    <h1>Antivirus Multiscanner</h1>
+        <div class="form-group">
+            <input type="file" id="file-field">
+            <button class="btn btn-primary" id="upload-btn">Upload File</button>
+        </div>
+        <div class="progress progress-striped">
+            <div class="progress-bar progress-bar-info" id="progress-bar">
+            </div>
+        </div>
+        <!--
+        <div id="dropbox">
+        </div>
+        -->
+        <div id="placeholder">
+            <table id="result-table" class="table table-striped">
+                <thead>
+                    <tr><th>Antivirus</th><th>Result</th></tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
 </div>
-<div id="dropbox">
-</div>
-<div id="placeholder">
-</div>
-<table id="result-table">
-</table>
 </body>
 </html>

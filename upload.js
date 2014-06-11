@@ -1,9 +1,17 @@
 $(function () {
+    var file;
+    $('#result-table').hide();
     var dropbox = $("#dropbox");
     var fileInput = $("#file-field");
     fileInput.on("change", function() {
-          sendFile(this.files[0]);
+          file = this.files[0];
         });
+
+    $('#upload-btn').on("click", function() {
+        if (file) {
+          sendFile(file);
+        }
+    });
 
     dropbox.on("dragover", function(event) {
         event.preventDefault();  
@@ -36,6 +44,9 @@ function sendFile(file) {
             //console.log(response);
             processFile(response.result.id);
         }
+    }
+    xhr.onprogress = function (event) {
+        $('#progress-bar').width(Math.round(event.loaded / event.total * 100) + '%');
     }
     xhr.send(formData);
 }
