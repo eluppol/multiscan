@@ -20,6 +20,7 @@ $(function () {
     dropbox.on("drop", function (event) {
         event.preventDefault();  
         event.stopPropagation();
+        dropbox.text(event.originalEvent.dataTransfer.files[0].name);
         sendFile(event.originalEvent.dataTransfer.files[0]);
     });
 });
@@ -28,11 +29,13 @@ function sendFile(file) {
     var formData = new FormData();
     formData.append('upload', file);
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", '/apr/uploads');
-    xhr.onload = function (response) {
-        //if (response.status == 200) {
-            console.log(response);
-        //}
+    xhr.open("POST", '/api/uploads');
+    xhr.onload = function () {
+        if (this.status == 200) {
+	    var response = JSON.parse(this.response); 
+            //console.log(response);
+            processFile(response.result.id);
+        }
     }
     xhr.send(formData);
 }
@@ -43,7 +46,7 @@ function processFile (fileId) {
     function getAntiviruses() {
         $.ajax({
             dataType: "json",
-            url: './api/antiviruses',
+            url: '/api/antiviruses',
             data: {
                 'fields' : ['id', 'full_name'],
                 'active' : 1,
@@ -52,6 +55,8 @@ function processFile (fileId) {
             success: function (antiviruses) {
                 if (antiviruses['status'] == 200) {
                     avs = antiviruses['result'];
+                    //console.log('avs:');
+                    //console.log(avs);
                     updateTable();
                 }   
             },
@@ -68,17 +73,21 @@ function processFile (fileId) {
         });
     }
 
-    function getResults() {
+    function getResults(id) {
+        if (!id) { id=fileId; }
+        //console.log('getting result id=' + id);
         $.ajax({
             dataType: "json",
-            url: './api/results',
+            url: '/api/results',
             data: {
-                'file_id' : 35,
-                'from' : from,
+                'file_id' : id,
+                'last' : 1
             },
             success: function (data) {
                 if (data['status'] == 200) {
-                   results = data['results'];
+                   results = data['result'];
+                    //console.log('results:');
+                    //console.log(results);
                    updateTable();
                }
             },
@@ -88,21 +97,42 @@ function processFile (fileId) {
         });
     }
 
+    $('#placeholder').text('Scanning');
+    $('#result-table').html('');
+    var j = 0;
+
     function updateTable() {
+        //console.log("update table");
         if (avs && results) {
+            //console.log('length: ', avs.length);
             var i = 0;
             while (i < avs.length) {
-                var result = results.find(avs[i].id);
-                if (result) { //Wrong
-                    $("#results-table tr:last").after('<tr><td>' + av[i].full_name + '</td><td>' + result['result'] + '</td></tr>');
+                var result = find(results, 'av_id', avs[i].id);
+                if (result) { 
+                    //console.log('found');
+                    $("#result-table").append('<tr><td>' + avs[i].full_name + '</td><td>' + result['result'] + '</td></tr>');
                     avs.splice(i, 1);
                 } else {
                     i++;
                 }
             }
-            if (avs.length > 0) {
-                getResults();
+            if (avs.length > 0 && j++ < 15) {
+                $('#placeholder').append('.');
+                setTimeout(getResults, 3000);
+            } else {    
+                $('#placeholder').text('Scanned!');
             }
+        }
+    }
+
+    getAntiviruses();
+    getResults(fileId);
+}
+
+function find(arr, key_name, key) {
+    for (var i = 0; i<arr.length; i++) { 
+        if (arr[i][key_name] == key) {
+            return arr[i];
         }
     }
 }
