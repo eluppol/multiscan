@@ -1,14 +1,22 @@
 $(function () {
+    function initialize() {
+        $('#placeholder').html('');
+        $('#result-table').hide();
+        $('#bar-container').hide();
+        $('#progress-bar').width(0);
+        $('#result-table tbody').html('');
+    }
     var file;
-    $('#result-table').hide();
     var dropbox = $("#dropbox");
     var fileInput = $("#file-field");
+    initialize();
     fileInput.on("change", function() {
           file = this.files[0];
         });
 
     $('#upload-btn').on("click", function() {
         if (file) {
+        initialize();
           sendFile(file);
         }
     });
@@ -34,6 +42,7 @@ $(function () {
 });
 
 function sendFile(file) {
+    $('#bar-container').show();
     var formData = new FormData();
     formData.append('upload', file);
     var xhr = new XMLHttpRequest();
@@ -53,6 +62,8 @@ function sendFile(file) {
 
 function processFile (fileId) {
     var avs, results;
+
+    $('#result-table').show();
 
     function getAntiviruses() {
         $.ajax({
@@ -92,7 +103,8 @@ function processFile (fileId) {
             url: '/api/results',
             data: {
                 'file_id' : id,
-                'last' : 1
+                'last' : 1,
+                'limit': 100
             },
             success: function (data) {
                 if (data['status'] == 200) {
@@ -108,8 +120,7 @@ function processFile (fileId) {
         });
     }
 
-    $('#placeholder').text('Scanning');
-    $('#result-table').html('');
+    $('#placeholder').html("<h3>Scanning is in progress</h3><img src=\"ajax-loader.gif\"/>");
     var j = 0;
 
     function updateTable() {
@@ -121,17 +132,16 @@ function processFile (fileId) {
                 var result = find(results, 'av_id', avs[i].id);
                 if (result) { 
                     //console.log('found');
-                    $("#result-table").append('<tr><td>' + avs[i].full_name + '</td><td>' + result['result'] + '</td></tr>');
+                    $("#result-table tbody").append('<tr><td>' + avs[i].full_name + '</td><td>' + result['result'] + '</td></tr>');
                     avs.splice(i, 1);
                 } else {
                     i++;
                 }
             }
-            if (avs.length > 0 && j++ < 15) {
-                $('#placeholder').append('.');
+            if (avs.length > 0 && j++ < 25) {
                 setTimeout(getResults, 3000);
             } else {    
-                $('#placeholder').text('Scanned!');
+                $('#placeholder').html("<h3>Scanning completed</h3>");
             }
         }
     }
