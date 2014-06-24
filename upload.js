@@ -17,7 +17,7 @@ $(function () {
     $('#upload-btn').on("click", function() {
         if (file) {
         initialize();
-          sendFile(file);
+        checkAndSend(file);
         }
     });
 
@@ -40,6 +40,16 @@ $(function () {
         sendFile(event.originalEvent.dataTransfer.files[0]);
     });
 });
+
+function checkAndSend(file) {
+    var reader = new FileReader();
+    reader.onload = function() {
+       var hash=CryptoJS.SHA256(reader.result);
+       console.log(hash.toString(CryptoJS.enc.hex));
+       $('#hash').modal('show');
+    }
+    reader.readAsText(file);
+}
 
 function sendFile(file) {
     $('#bar-container').show();
