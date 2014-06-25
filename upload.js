@@ -45,8 +45,24 @@ function checkAndSend(file) {
     var reader = new FileReader();
     reader.onload = function() {
        var hash=CryptoJS.SHA256(reader.result);
-       console.log(hash.toString(CryptoJS.enc.hex));
-       $('#hash').modal('show');
+        $.ajax({
+            dataType: "json",
+            url: '/api/files',
+            data: {
+                'hash' : hash.toString(CryptoJS.enc.hex),
+            },
+            success: function (resp) {
+                if (resp['status'] == 200) {
+                    if (resp.result.length != 0) {
+                        $('#hash').modal('show');
+                        $('#rescan-btn').on('click', function() {
+                            $('#hash').modal('hide');
+                            sendFile(file);
+                        });
+                    }
+                }   
+            }
+        });
     }
     reader.readAsText(file);
 }

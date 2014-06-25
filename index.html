@@ -32,14 +32,23 @@
                 </tbody>
             </table>
 </div>
-<div class="modal hide fade" id="hash">
-<div class="modal-body">
-<p>This file was already scanned. Do you like to review last scanning results?</p>
+<!-- Button trigger modal -->
+
+<!-- Modal -->
+<div class="modal fade" id="hash" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">File was already analyzed</h4>
+      </div>
+      <div class="modal-body">
+        This file was already analyzed by Antivirus Multiscanner. You can view last scanning results or scan it again.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" id="rescan-btn">Rescan</button>
+        <button type="button" class="btn btn-primary" id="review-btn">View last results</button>
+      </div>
+    </div>
+  </div>
 </div>
-<div class="modal-footer">
-<button class="btn">Rescan</button>
-<button class="btn btn-primary">View last results</button>
-</div>
-</div>
-</body>
-</html>
